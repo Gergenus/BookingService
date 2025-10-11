@@ -59,9 +59,13 @@ func (p *PostgresLabRepository) EquipmentByName(ctx context.Context, equipmentNa
 
 	for rows.Next() {
 		var eq models.Equipment
-		rows.Scan(&eq.EquipmentId,
+		err := rows.Scan(&eq.EquipmentId,
 			&eq.EquipmentName, &eq.Manufacturer, &eq.Description, &eq.ImageURL)
 		equipment = append(equipment, eq)
+		if err != nil {
+			rows.Close()
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
 	}
 	rows.Close()
 	if rows.Err() != nil {

@@ -16,10 +16,16 @@ func main() {
 	db := db.InitDB(cfg.PostgresURL)
 	miniClient := s3.InitS3Storage(cfg.MinioEndpoint, cfg.MinioaccessKeyId, cfg.MinioSecretAccessKey, cfg.MinioBucket)
 	log := logger.SetUp(cfg.LogLevel)
+
 	miniRepo := repository.NewMinioImageRepository(miniClient, cfg.MinioBucket, cfg.MinioEndpoint)
 	postRepo := repository.NewPostgresLabRepository(db)
+	bookRepo := repository.NewPostgresBookingRepository(db)
+
 	equipService := service.NewEquipmentService(log, &postRepo, miniRepo)
+	bookService := service.NewBookingService(&bookRepo, log)
+
 	equipHandler := handler.NewEquipmentHandler(&equipService)
+	bookHandler := handler.NewBookingHandler(&bookService)
 
 	e := echo.New()
 	eq := e.Group("/api/v1/equipment")
@@ -39,8 +45,9 @@ func main() {
 	}
 	booking := e.Group("/api/v1/booking")
 	{
-		booking.POST("/", nil)
-		booking.DELETE("/:id", nil)
+		booking.POST("/", bookHandler.Createbooking)
+		booking.DELETE("/:id", bookHandler.DeleteBooking)
+		booking.GET("/:id", bookHandler.Bookings)
 	}
 	e.Start(":" + cfg.HTTPPort)
 }

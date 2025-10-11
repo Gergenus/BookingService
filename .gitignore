@@ -1,0 +1,4 @@
+.env
+minio.env
+postgres.env
+S3_Data

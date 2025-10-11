@@ -1,0 +1,27 @@
+services:
+  LAB_db:
+    image: postgres
+    container_name: LAB_db
+    ports:
+      - 5436:5432
+    volumes: 
+      - db_data:/var/lib/postgresql/data
+    env_file:
+      - postgres.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: quay.io/minio/minio
+    ports: [9000:9000, 9001:9001]
+    volumes:
+      - ./S3_data:/data
+    env_file:
+      - minio.env
+    command: server /data --console-address ":9001"
+
+volumes:
+  db_data:

@@ -19,10 +19,28 @@ func main() {
 	miniRepo := repository.NewMinioImageRepository(miniClient, cfg.MinioBucket, cfg.MinioEndpoint)
 	postRepo := repository.NewPostgresLabRepository(db)
 	equipService := service.NewEquipmentService(log, &postRepo, miniRepo)
-	equipHandler := handler.NewEquipmentHandler(equipService)
+	equipHandler := handler.NewEquipmentHandler(&equipService)
 
 	e := echo.New()
-	e.POST("/addEquipment", equipHandler.CreateEquipment)
-
+	eq := e.Group("/api/v1/equipment")
+	{
+		eq.POST("/create", equipHandler.CreateEquipment)
+		eq.GET("", equipHandler.EquipmentByName)
+		eq.PUT("/update", nil)
+		eq.DELETE("/:id", equipHandler.DeleteEquipment)
+		eq.GET("/:id", equipHandler.EquipmentById)
+	}
+	auth := e.Group("/api/v1/auth")
+	{
+		auth.POST("/register", nil)
+		auth.POST("/login", nil)
+		auth.POST("/refresh", nil)
+		auth.POST("/logout", nil)
+	}
+	booking := e.Group("/api/v1/booking")
+	{
+		booking.POST("/", nil)
+		booking.DELETE("/:id", nil)
+	}
 	e.Start(":" + cfg.HTTPPort)
 }

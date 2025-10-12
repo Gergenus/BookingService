@@ -22,6 +22,7 @@ type BookingRepositoryInterface interface {
 	CreateBooking(ctx context.Context, booking models.Booking) (int, error)
 	Bookings(ctx context.Context, equipmentId int) ([]models.Booking, error)
 	DeleteBooking(ctx context.Context, bookingId int) error
+	Booking(ctx context.Context, bookingId int) (*models.Booking, error)
 }
 
 func NewPostgresBookingRepository(db db.PostgresDB) PostgresBookingRepository {
@@ -88,4 +89,15 @@ func (p *PostgresBookingRepository) DeleteBooking(ctx context.Context, bookingId
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
+}
+
+func (p *PostgresBookingRepository) Booking(ctx context.Context, bookingId int) (*models.Booking, error) {
+	const op = "booking_repository.Booking"
+	var booking models.Booking
+	err := p.db.DB.QueryRow(ctx, "SELECT * FROM booking WHERE id = $1", bookingId).Scan(&booking.Id, &booking.EquipmentId,
+		&booking.UserId, &booking.StartTime, &booking.EndTime)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return &booking, nil
 }

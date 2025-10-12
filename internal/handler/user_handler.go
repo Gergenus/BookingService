@@ -14,11 +14,12 @@ const AccessTokenDuration = 60 * 24 * 60 * 60
 const RefreshTokenDuration = 60 * 24 * 60 * 60
 
 type UserHandler struct {
-	srv service.UserServiceInterface
+	srv         service.UserServiceInterface
+	adminSecret string
 }
 
-func NewUserHandler(srv service.UserServiceInterface) UserHandler {
-	return UserHandler{srv: srv}
+func NewUserHandler(srv service.UserServiceInterface, adminSecret string) UserHandler {
+	return UserHandler{srv: srv, adminSecret: adminSecret}
 }
 
 func (u *UserHandler) Register(c echo.Context) error {
@@ -30,6 +31,17 @@ func (u *UserHandler) Register(c echo.Context) error {
 			"error": "invalid payload",
 		})
 	}
+	if userDTO.Role == "admin" && userDTO.AdminSecret != u.adminSecret {
+		return c.JSON(http.StatusForbidden, map[string]interface{}{
+			"error": "cannot register admin",
+		})
+	}
+	if userDTO.Role != "admin" && userDTO.Role != "scientist" {
+		return c.JSON(http.StatusBadRequest, map[string]any{
+			"error": "invalid role",
+		})
+	}
+
 	uid, err := u.srv.CreateUser(c.Request().Context(), userDTO.Username, userDTO.Role, userDTO.Email, userDTO.Password)
 	if err != nil {
 		if errors.Is(err, service.ErrUserAlreadyExists) {

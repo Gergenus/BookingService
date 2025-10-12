@@ -7,6 +7,7 @@ import (
 
 	"github.com/Gergenus/bookingService/internal/models"
 	"github.com/Gergenus/bookingService/internal/service"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,6 +27,13 @@ func (b *BookingHandler) Createbooking(c echo.Context) error {
 			"error": "invalid payload",
 		})
 	}
+	uid, ok := c.Get("uuid").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]any{
+			"error": "uuid not found",
+		})
+	}
+	booking.UserId = uuid.MustParse(uid)
 	// TODO: Добавить замену uid из middleware
 	id, err := b.bookingService.CreateBooking(c.Request().Context(), booking)
 	if err != nil {
@@ -68,6 +76,25 @@ func (b *BookingHandler) DeleteBooking(c echo.Context) error {
 			"error": "invalid payload",
 		})
 	}
+	uuid, ok := c.Get("uuid").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, map[string]any{
+			"error": "uuid not found",
+		})
+	}
+	booking, err := b.bookingService.Booking(c.Request().Context(), bookIdInt)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]any{
+			"error": "internal error",
+		})
+	}
+
+	if booking.UserId.String() != uuid {
+		return c.JSON(http.StatusForbidden, map[string]any{
+			"error": "invalid owner",
+		})
+	}
+
 	err = b.bookingService.DeleteBooking(c.Request().Context(), bookIdInt)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]any{

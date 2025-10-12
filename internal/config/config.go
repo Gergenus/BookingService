@@ -22,6 +22,7 @@ type Config struct {
 	RedisAddress         string
 	RedisPassword        string
 	RedisDB              int
+	AdminSecret          string
 }
 
 func InitConfig() Config {
@@ -55,5 +56,6 @@ func InitConfig() Config {
 		RedisAddress:         os.Getenv("REDIS_ADDRESS"),
 		RedisPassword:        os.Getenv("REDIS_PASSWORD"),
 		RedisDB:              redisdb,
+		AdminSecret:          os.Getenv("ADMIN_SECRET"),
 	}
 }

@@ -23,6 +23,7 @@ type BookingServiceInterface interface {
 	CreateBooking(ctx context.Context, booking models.Booking) (int, error)
 	Bookings(ctx context.Context, equipmentId int) ([]models.Booking, error)
 	DeleteBooking(ctx context.Context, bookingId int) error
+	Booking(ctx context.Context, bookingId int) (*models.Booking, error)
 }
 
 func NewBookingService(bookingRepo repository.BookingRepositoryInterface, log *slog.Logger) BookingService {
@@ -66,4 +67,16 @@ func (b *BookingService) DeleteBooking(ctx context.Context, bookingId int) error
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
+}
+
+func (b *BookingService) Booking(ctx context.Context, bookingId int) (*models.Booking, error) {
+	const op = "booking_service.Booking"
+	log := b.log.With(slog.String("op", op))
+	log.Info("getting booking", slog.Int("booking_id", bookingId))
+	booking, err := b.bookingRepo.Booking(ctx, bookingId)
+	if err != nil {
+		log.Error("getting bookings error", slog.Int("booking_id", bookingId))
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return booking, nil
 }

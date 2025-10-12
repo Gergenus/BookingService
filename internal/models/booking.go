@@ -9,7 +9,7 @@ import (
 type Booking struct {
 	Id          int       `json:"id,omitempty"`
 	EquipmentId int       `json:"equipment_id"`
-	UserId      uuid.UUID `json:"user_id"`
+	UserId      uuid.UUID `json:"user_id,omitempty"`
 	StartTime   time.Time `json:"start_time"`
 	EndTime     time.Time `json:"end_time"`
 }

@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -15,8 +17,11 @@ type Config struct {
 	MinioaccessKeyId     string
 	MinioSecretAccessKey string
 	MinioBucket          string
-	// 	AccessTTL   time.Duration
-	// 	RefreshTTl  time.Duration
+	AccessTTL            time.Duration
+	RefreshTTL           time.Duration
+	RedisAddress         string
+	RedisPassword        string
+	RedisDB              int
 }
 
 func InitConfig() Config {
@@ -24,14 +29,18 @@ func InitConfig() Config {
 	if err != nil {
 		panic(err)
 	}
-	// AccessTTL, err := time.ParseDuration(os.Getenv("ACCESS_TTL"))
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// RefreshTTl, err := time.ParseDuration(os.Getenv("REFRESH_TTL"))
-	// if err != nil {
-	// 	panic(err)
-	// }
+	AccessTTL, err := time.ParseDuration(os.Getenv("ACCESS_TTL"))
+	if err != nil {
+		panic(err)
+	}
+	RefreshTTl, err := time.ParseDuration(os.Getenv("REFRESH_TTL"))
+	if err != nil {
+		panic(err)
+	}
+	redisdb, err := strconv.Atoi(os.Getenv("REDIS_DB"))
+	if err != nil {
+		panic(err)
+	}
 	return Config{
 		PostgresURL:          os.Getenv("POSTGRES_URL"),
 		LogLevel:             os.Getenv("LOG_LEVEL"),
@@ -41,7 +50,10 @@ func InitConfig() Config {
 		MinioaccessKeyId:     os.Getenv("MINIO_ACCESS_KEY_ID"),
 		MinioSecretAccessKey: os.Getenv("MINIO_SECRET_ACCCESS_KEY"),
 		MinioBucket:          os.Getenv("MINIO_BUCKET"),
-		// AccessTTL:   AccessTTL,
-		// RefreshTTl:  RefreshTTl,
+		AccessTTL:            AccessTTL,
+		RefreshTTL:           RefreshTTl,
+		RedisAddress:         os.Getenv("REDIS_ADDRESS"),
+		RedisPassword:        os.Getenv("REDIS_PASSWORD"),
+		RedisDB:              redisdb,
 	}
 }

@@ -23,5 +23,16 @@ services:
       - minio.env
     command: server /data --console-address ":9001"
 
+  cart_redis:
+    image: redis
+    container_name: redis_db
+    ports:
+      - 6379:6379
+    volumes:
+      - cart_redis_db:/data
+    env_file:
+      - redis.env
+
 volumes:
   db_data:
+  cart_redis_db:

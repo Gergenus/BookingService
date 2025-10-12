@@ -1,4 +1,5 @@
 .env
 minio.env
 postgres.env
+redis.env
 S3_Data

@@ -14,16 +14,16 @@ services:
       timeout: 5s
       retries: 5
 
-  minio:
+  minioService:
     image: quay.io/minio/minio
     ports: [9000:9000, 9001:9001]
     volumes:
-      - ./S3_data:/data
+      - /Users/Dmitry/S3_data:/data
     env_file:
       - minio.env
     command: server /data --console-address ":9001"
 
-  cart_redis:
+  redis_service:
     image: redis
     container_name: redis_db
     ports:
@@ -32,6 +32,20 @@ services:
       - cart_redis_db:/data
     env_file:
       - redis.env
+
+  app:
+    image: booking
+    ports:
+      - 8080:8080
+    depends_on:
+      minioService:
+        condition: service_started
+      redis_service:
+        condition: service_started
+      LAB_db:
+        condition: service_healthy
+        restart: true
+      
 
 volumes:
   db_data:

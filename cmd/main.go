@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/Gergenus/bookingService/internal/config"
 	"github.com/Gergenus/bookingService/internal/handler"
 	"github.com/Gergenus/bookingService/internal/middleware"
@@ -58,6 +60,11 @@ func main() {
 		booking.DELETE("/:id", bookHandler.DeleteBooking)
 		booking.GET("/:id", bookHandler.Bookings)
 	}
+	e.GET("healthcheck", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]any{
+			"status": "ok",
+		})
+	})
 	if err := e.Start(":" + cfg.HTTPPort); err != nil {
 		panic(err)
 	}

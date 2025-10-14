@@ -137,8 +137,14 @@ func (u *UserHandler) Refresh(c echo.Context) error {
 			"error": "internal server error",
 		})
 	}
-	setCookie(c, "RefreshToken", newRefresh.String(), RefreshTokenDuration)
-	setCookie(c, "AccessToken", newAccess, AccessTokenDuration)
+	err = setCookie(c, "RefreshToken", newRefresh.String(), RefreshTokenDuration)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal error")
+	}
+	err = setCookie(c, "AccessToken", newAccess, AccessTokenDuration)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal error")
+	}
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"AccessToken":  newAccess,
 		"RefreshToken": newRefresh,

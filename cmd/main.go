@@ -58,5 +58,7 @@ func main() {
 		booking.DELETE("/:id", bookHandler.DeleteBooking)
 		booking.GET("/:id", bookHandler.Bookings)
 	}
-	e.Start(":" + cfg.HTTPPort)
+	if err := e.Start(":" + cfg.HTTPPort); err != nil {
+		panic(err)
+	}
 }

@@ -56,7 +56,7 @@ func (j JWTService) GenerateAccessToken(user models.User) (string, error) {
 func (u JWTService) RegenerateToken(oldToken string) (string, error) {
 	const op = "jwtpkg.RegenerateToken"
 	var claims UserClaims
-	token, err := jwt.ParseWithClaims(oldToken, &claims, func(t *jwt.Token) (interface{}, error) { return []byte(u.Secret), nil })
+	token, err := jwt.ParseWithClaims(oldToken, &claims, func(t *jwt.Token) (interface{}, error) { return []byte(u.Secret), nil }, jwt.WithoutClaimsValidation())
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}

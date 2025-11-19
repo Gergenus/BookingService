@@ -8,6 +8,7 @@ import (
 
 	"github.com/Gergenus/bookingService/internal/models"
 	"github.com/Gergenus/bookingService/internal/repository"
+	"github.com/minio/minio-go/v7"
 )
 
 type EquipmentService struct {
@@ -22,10 +23,21 @@ type EquipmentServiceInterface interface {
 	EquipmentByName(ctx context.Context, equipmentName string) ([]models.Equipment, error)
 	DeleteEquipment(ctx context.Context, equipment_id int) error
 	UpdateEquipment(ctx context.Context, equipment models.Equipment) error
+	SignURL(ctx context.Context, imagePath string) (*minio.Object, error)
 }
 
 func NewEquipmentService(log *slog.Logger, repo repository.LabRepositroy, mini repository.ImageRepositoryInterface) EquipmentService {
 	return EquipmentService{log: log, repo: repo, mini: mini}
+}
+
+func (e *EquipmentService) SignURL(ctx context.Context, imagePath string) (*minio.Object, error) {
+	const op = "equipment_service.SignURL"
+	obj, err := e.mini.SignURL(ctx, imagePath)
+	if err != nil {
+		e.log.Error("signing image to s3 storage error", slog.String("error", err.Error()))
+		return nil, fmt.Errorf("%s, %w", op, err)
+	}
+	return obj, nil
 }
 
 func (e *EquipmentService) CreateEquipment(ctx context.Context, equipment models.Equipment, image *multipart.FileHeader) (int, error) {

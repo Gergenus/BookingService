@@ -14,6 +14,7 @@ import (
 	"github.com/Gergenus/bookingService/pkg/redispkg"
 	"github.com/Gergenus/bookingService/pkg/s3"
 	"github.com/labstack/echo/v4"
+	mid "github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -39,6 +40,11 @@ func main() {
 	userHandler := handler.NewUserHandler(userService, cfg.AdminSecret)
 
 	e := echo.New()
+	e.Use(mid.CORSWithConfig(mid.CORSConfig{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowCredentials: true,
+	}))
 	eq := e.Group("/api/v1/equipment", middle.Auth)
 	{
 		eq.POST("/create", equipHandler.CreateEquipment, middle.AdminAuth)
@@ -59,7 +65,9 @@ func main() {
 		booking.POST("/", bookHandler.Createbooking)
 		booking.DELETE("/:id", bookHandler.DeleteBooking)
 		booking.GET("/:id", bookHandler.Bookings)
+		booking.GET("/scientist", bookHandler.ScientistBookings)
 	}
+	e.GET("/api/v1/images/:image", equipHandler.SignedImageURL)
 	e.GET("healthcheck", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]any{
 			"status": "ok",

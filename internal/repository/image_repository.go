@@ -19,6 +19,7 @@ type MinioImageRepository struct {
 type ImageRepositoryInterface interface {
 	AddImage(ctx context.Context, image *multipart.FileHeader) (string, error)
 	DeleteImage(ctx context.Context, objectName string) error
+	SignURL(ctx context.Context, imagePath string) (*minio.Object, error)
 }
 
 func NewMinioImageRepository(minioClient *minio.Client, bucketName string, endpoint string) *MinioImageRepository {
@@ -27,6 +28,15 @@ func NewMinioImageRepository(minioClient *minio.Client, bucketName string, endpo
 		bucketName:  bucketName,
 		endpoint:    endpoint,
 	}
+}
+
+func (m *MinioImageRepository) SignURL(ctx context.Context, imagePath string) (*minio.Object, error) {
+	const op = "image_repository.SignURL"
+	obj, err := m.minioClient.GetObject(ctx, m.bucketName, imagePath, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return obj, nil
 }
 
 // returns url

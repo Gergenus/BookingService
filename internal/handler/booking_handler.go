@@ -19,6 +19,23 @@ func NewBookingHandler(bookingService service.BookingServiceInterface) BookingHa
 	return BookingHandler{bookingService: bookingService}
 }
 
+func (b *BookingHandler) ScientistBookings(c echo.Context) error {
+	uid := c.Get("uuid")
+	uuid, ok := uid.(string)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, map[string]any{
+			"error": "internal error",
+		})
+	}
+	booking, err := b.bookingService.ScientistBookings(c.Request().Context(), uuid)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]any{
+			"error": "internal error",
+		})
+	}
+	return c.JSON(http.StatusOK, booking)
+}
+
 func (b *BookingHandler) Createbooking(c echo.Context) error {
 	var booking models.Booking
 	err := c.Bind(&booking)

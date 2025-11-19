@@ -23,10 +23,28 @@ type BookingRepositoryInterface interface {
 	Bookings(ctx context.Context, equipmentId int) ([]models.Booking, error)
 	DeleteBooking(ctx context.Context, bookingId int) error
 	Booking(ctx context.Context, bookingId int) (*models.Booking, error)
+	ScientistBookings(ctx context.Context, uid string) ([]models.Booking, error)
 }
 
 func NewPostgresBookingRepository(db db.PostgresDB) PostgresBookingRepository {
 	return PostgresBookingRepository{db: db}
+}
+
+func (p *PostgresBookingRepository) ScientistBookings(ctx context.Context, uid string) ([]models.Booking, error) {
+	var data []models.Booking
+	row, err := p.db.DB.Query(ctx, "SELECT * FROM booking WHERE user_id = $1", uid)
+	if err != nil {
+		return nil, err
+	}
+	for row.Next() {
+		var booking models.Booking
+		err := row.Scan(&booking.Id, &booking.EquipmentId, &booking.UserId, &booking.StartTime, &booking.EndTime)
+		if err != nil {
+			return nil, err
+		}
+		data = append(data, booking)
+	}
+	return data, nil
 }
 
 func (p *PostgresBookingRepository) checkInterceptions(ctx context.Context, startTime, endTime time.Time, equipmentId int) (bool, error) {

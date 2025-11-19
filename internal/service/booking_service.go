@@ -24,10 +24,19 @@ type BookingServiceInterface interface {
 	Bookings(ctx context.Context, equipmentId int) ([]models.Booking, error)
 	DeleteBooking(ctx context.Context, bookingId int) error
 	Booking(ctx context.Context, bookingId int) (*models.Booking, error)
+	ScientistBookings(ctx context.Context, uid string) ([]models.Booking, error)
 }
 
 func NewBookingService(bookingRepo repository.BookingRepositoryInterface, log *slog.Logger) BookingService {
 	return BookingService{bookingRepo: bookingRepo, log: log}
+}
+
+func (b *BookingService) ScientistBookings(ctx context.Context, uid string) ([]models.Booking, error) {
+	booking, err := b.bookingRepo.ScientistBookings(ctx, uid)
+	if err != nil {
+		return nil, err
+	}
+	return booking, nil
 }
 
 func (b *BookingService) CreateBooking(ctx context.Context, booking models.Booking) (int, error) {
